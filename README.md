@@ -1,16 +1,40 @@
-# calculatrice
+# Calculatrice Flutter
 
-Ceci est une application calculatrice développée par BAKOUAN Hermann et KABORE Zakaria, en utilisant flutter
+Cette application mobile de calculatrice a été développée par **BAKOUAN Hermann** et **KABORE Zakaria** dans le cadre du cours de développement mobile. Elle permet d’effectuer des opérations arithmétiques de base dans une interface moderne et intuitive.
 
-## Getting Started
+## Fonctionnalités
 
-This project is a starting point for a Flutter application.
+- Interface utilisateur moderne basée sur **Material 3**
+- Thème sombre pour une meilleure lisibilité
+- Calculs de base :
+    - Addition
+    - Soustraction
+    - Multiplication
+    - Division
+- Architecture modulaire avec séparation entre logique métier et interface
 
-A few resources to get you started if this is your first Flutter project:
+## Technologies utilisées
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Flutter** (SDK mobile multiplateforme)
+- **Dart** (langage de programmation)
+- **Android Studio** (environnement de développement intégré utilisé pour ce projet)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Structure du projet
+
+lib/
+├── main.dart                # Point d’entrée de l’application
+├── pages/
+│   └── calc_page.dart      # Interface utilisateur de la calculatrice
+└── services/
+└── logique.dart         # Logique métier (calculs)
+
+
+## Installation
+
+Pour exécuter l’application localement :
+
+```bash
+git clone https://github.com/MannoBak/calculatrice-flutter.git
+cd calculatrice-flutter
+flutter pub get
+flutter run
