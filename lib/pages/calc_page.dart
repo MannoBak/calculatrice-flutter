@@ -74,11 +74,16 @@ class _CalculatorPageState extends State<CalculatorPage> {
     setState(() {
       final isDigit = RegExp(r'\d').hasMatch(token);
 
-      // reset après Error si chiffre ou "."
-      if (_display == "Error" && (isDigit || token == ".")) {
+      // reset après Error : réinitialiser complètement (chiffre, ".", ou opérateur)
+      if (_display == "Error") {
         _expr = "";
         _lastExpr = "";
         _display = "0";
+        // si c'est un opérateur, on quitte (pas d'ajout après Error)
+        if (_isOperator(token)) {
+          return;
+        }
+        // sinon, continuer avec la logique normale pour chiffre ou "."
       }
 
       // comportement après "=":
@@ -163,8 +168,10 @@ class _CalculatorPageState extends State<CalculatorPage> {
             final maxCalcWidth = isLandscape ? W : math.min(W, 520.0);
 
             // affichage en haut
-            final displayH =
-            (H * (isLandscape ? 0.32 : 0.30)).clamp(110.0, 220.0);
+            final displayH = (H * (isLandscape ? 0.32 : 0.30)).clamp(
+              110.0,
+              220.0,
+            );
             final topText = (_lastExpr.isNotEmpty ? _lastExpr : _expr);
 
             final displayFont = (maxCalcWidth * 0.14).clamp(34.0, 60.0);
@@ -202,37 +209,106 @@ class _CalculatorPageState extends State<CalculatorPage> {
               // 5 lignes -> 4 gaps
               final maxButtonH = (innerH - 4 * gap) / 5;
 
-              final size = [maxButtonW, maxButtonH]
-                  .reduce((a, b) => a < b ? a : b)
-                  .clamp(42.0, 92.0);
+              final size = [
+                maxButtonW,
+                maxButtonH,
+              ].reduce((a, b) => a < b ? a : b).clamp(42.0, 92.0);
 
               final equalHeight = 2 * size + gap;
 
               return Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: padX, vertical: padY),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: padX,
+                  vertical: padY,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     rowCentered([
-                      CalcButton(text: "C", onTap: _clearAll, kind: ButtonKind.utility, size: size, gap: 0),
-                      CalcButton(text: "%", onTap: () => _append("%"), kind: ButtonKind.utility, size: size, gap: 0),
-                      CalcButton(text: "÷", onTap: () => _append("÷"), kind: ButtonKind.op, size: size, gap: 0),
-                      CalcButton(text: "×", onTap: () => _append("×"), kind: ButtonKind.op, size: size, gap: 0),
+                      CalcButton(
+                        text: "C",
+                        onTap: _clearAll,
+                        kind: ButtonKind.utility,
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "%",
+                        onTap: () => _append("%"),
+                        kind: ButtonKind.utility,
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "÷",
+                        onTap: () => _append("÷"),
+                        kind: ButtonKind.op,
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "×",
+                        onTap: () => _append("×"),
+                        kind: ButtonKind.op,
+                        size: size,
+                        gap: 0,
+                      ),
                     ]),
                     vgap(),
                     rowCentered([
-                      CalcButton(text: "7", onTap: () => _append("7"), size: size, gap: 0),
-                      CalcButton(text: "8", onTap: () => _append("8"), size: size, gap: 0),
-                      CalcButton(text: "9", onTap: () => _append("9"), size: size, gap: 0),
-                      CalcButton(text: "−", onTap: () => _append("-"), kind: ButtonKind.op, size: size, gap: 0),
+                      CalcButton(
+                        text: "7",
+                        onTap: () => _append("7"),
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "8",
+                        onTap: () => _append("8"),
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "9",
+                        onTap: () => _append("9"),
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "−",
+                        onTap: () => _append("-"),
+                        kind: ButtonKind.op,
+                        size: size,
+                        gap: 0,
+                      ),
                     ]),
                     vgap(),
                     rowCentered([
-                      CalcButton(text: "4", onTap: () => _append("4"), size: size, gap: 0),
-                      CalcButton(text: "5", onTap: () => _append("5"), size: size, gap: 0),
-                      CalcButton(text: "6", onTap: () => _append("6"), size: size, gap: 0),
-                      CalcButton(text: "+", onTap: () => _append("+"), kind: ButtonKind.op, size: size, gap: 0),
+                      CalcButton(
+                        text: "4",
+                        onTap: () => _append("4"),
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "5",
+                        onTap: () => _append("5"),
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "6",
+                        onTap: () => _append("6"),
+                        size: size,
+                        gap: 0,
+                      ),
+                      CalcButton(
+                        text: "+",
+                        onTap: () => _append("+"),
+                        kind: ButtonKind.op,
+                        size: size,
+                        gap: 0,
+                      ),
                     ]),
                     vgap(),
                     Row(
@@ -241,15 +317,46 @@ class _CalculatorPageState extends State<CalculatorPage> {
                         Column(
                           children: [
                             rowCentered([
-                              CalcButton(text: "1", onTap: () => _append("1"), size: size, gap: 0),
-                              CalcButton(text: "2", onTap: () => _append("2"), size: size, gap: 0),
-                              CalcButton(text: "3", onTap: () => _append("3"), size: size, gap: 0),
+                              CalcButton(
+                                text: "1",
+                                onTap: () => _append("1"),
+                                size: size,
+                                gap: 0,
+                              ),
+                              CalcButton(
+                                text: "2",
+                                onTap: () => _append("2"),
+                                size: size,
+                                gap: 0,
+                              ),
+                              CalcButton(
+                                text: "3",
+                                onTap: () => _append("3"),
+                                size: size,
+                                gap: 0,
+                              ),
                             ]),
                             vgap(),
                             rowCentered([
-                              CalcButton(text: "+/-", onTap: _toggleSign, kind: ButtonKind.utility, size: size, gap: 0),
-                              CalcButton(text: "0", onTap: () => _append("0"), size: size, gap: 0),
-                              CalcButton(text: ".", onTap: () => _append("."), size: size, gap: 0),
+                              CalcButton(
+                                text: "+/-",
+                                onTap: _toggleSign,
+                                kind: ButtonKind.utility,
+                                size: size,
+                                gap: 0,
+                              ),
+                              CalcButton(
+                                text: "0",
+                                onTap: () => _append("0"),
+                                size: size,
+                                gap: 0,
+                              ),
+                              CalcButton(
+                                text: ".",
+                                onTap: () => _append("."),
+                                size: size,
+                                gap: 0,
+                              ),
                             ]),
                           ],
                         ),
@@ -283,18 +390,27 @@ class _CalculatorPageState extends State<CalculatorPage> {
               final maxLeftButtonW = (leftW - 3 * gap) / 4;
               final maxButtonH = (innerH - (rows - 1) * gap) / rows;
 
-              final size = [maxLeftButtonW, maxButtonH]
-                  .reduce((a, b) => a < b ? a : b)
-                  .clamp(30.0, 64.0);
+              final size = [
+                maxLeftButtonW,
+                maxButtonH,
+              ].reduce((a, b) => a < b ? a : b).clamp(30.0, 64.0);
 
               final equalHeight = 2 * size + gap;
 
               Widget placeholder() => SizedBox(width: size, height: size);
 
-              Widget smallButton(String t, VoidCallback onTap,
-                  {ButtonKind kind = ButtonKind.normal}) {
+              Widget smallButton(
+                String t,
+                VoidCallback onTap, {
+                ButtonKind kind = ButtonKind.normal,
+              }) {
                 return CalcButton(
-                    text: t, onTap: onTap, kind: kind, size: size, gap: 0);
+                  text: t,
+                  onTap: onTap,
+                  kind: kind,
+                  size: size,
+                  gap: 0,
+                );
               }
 
               Widget row4(List<Widget> children) {
@@ -314,8 +430,10 @@ class _CalculatorPageState extends State<CalculatorPage> {
               }
 
               return Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: padX, vertical: padY),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: padX,
+                  vertical: padY,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -326,8 +444,16 @@ class _CalculatorPageState extends State<CalculatorPage> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           row4([
-                            smallButton("C", _clearAll, kind: ButtonKind.utility),
-                            smallButton("%", () => _append("%"), kind: ButtonKind.utility),
+                            smallButton(
+                              "C",
+                              _clearAll,
+                              kind: ButtonKind.utility,
+                            ),
+                            smallButton(
+                              "%",
+                              () => _append("%"),
+                              kind: ButtonKind.utility,
+                            ),
                             smallButton("7", () => _append("7")),
                             smallButton("8", () => _append("8")),
                           ]),
@@ -343,7 +469,11 @@ class _CalculatorPageState extends State<CalculatorPage> {
                             smallButton("1", () => _append("1")),
                             smallButton("2", () => _append("2")),
                             smallButton("3", () => _append("3")),
-                            smallButton("+/-", _toggleSign, kind: ButtonKind.utility),
+                            smallButton(
+                              "+/-",
+                              _toggleSign,
+                              kind: ButtonKind.utility,
+                            ),
                           ]),
                           vgap(),
                           row4([
@@ -364,13 +494,37 @@ class _CalculatorPageState extends State<CalculatorPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          CalcButton(text: "÷", onTap: () => _append("÷"), kind: ButtonKind.op, size: size, gap: 0),
+                          CalcButton(
+                            text: "÷",
+                            onTap: () => _append("÷"),
+                            kind: ButtonKind.op,
+                            size: size,
+                            gap: 0,
+                          ),
                           vgap(),
-                          CalcButton(text: "×", onTap: () => _append("×"), kind: ButtonKind.op, size: size, gap: 0),
+                          CalcButton(
+                            text: "×",
+                            onTap: () => _append("×"),
+                            kind: ButtonKind.op,
+                            size: size,
+                            gap: 0,
+                          ),
                           vgap(),
-                          CalcButton(text: "−", onTap: () => _append("-"), kind: ButtonKind.op, size: size, gap: 0),
+                          CalcButton(
+                            text: "−",
+                            onTap: () => _append("-"),
+                            kind: ButtonKind.op,
+                            size: size,
+                            gap: 0,
+                          ),
                           vgap(),
-                          CalcButton(text: "+", onTap: () => _append("+"), kind: ButtonKind.op, size: size, gap: 0),
+                          CalcButton(
+                            text: "+",
+                            onTap: () => _append("+"),
+                            kind: ButtonKind.op,
+                            size: size,
+                            gap: 0,
+                          ),
                           vgap(),
                           CalcButton(
                             text: "=",
@@ -401,7 +555,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           crossAxisAlignment: CrossAxisAlignment.end,
@@ -411,8 +567,9 @@ class _CalculatorPageState extends State<CalculatorPage> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  fontSize: exprFont.toDouble(),
-                                  color: Colors.white60),
+                                fontSize: exprFont.toDouble(),
+                                color: Colors.white60,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
