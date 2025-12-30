@@ -48,6 +48,7 @@ class ExpressionEngine {
     return s.replaceFirst(RegExp(r'\.?0+$'), '');
   }
 
+  // Permet de découper l'expression en tokens (nombres et opérateurs)
   List<String> _tokenize(String expr) {
     final tokens = <String>[];
     final buffer = StringBuffer();
@@ -75,7 +76,7 @@ class ExpressionEngine {
           isUnaryMinusAllowed = false;
           continue;
         }
-
+        // flush du buffer numérique
         if (buffer.isNotEmpty) {
           tokens.add(buffer.toString());
           buffer.clear();
@@ -88,7 +89,7 @@ class ExpressionEngine {
 
       throw FormatException("Invalid char: $c");
     }
-
+    // flush final
     if (buffer.isNotEmpty) tokens.add(buffer.toString());
 
     // Expression finissant par opérateur -> erreur
@@ -99,6 +100,7 @@ class ExpressionEngine {
     return tokens;
   }
 
+  // Convertit une liste de tokens en notation polonaise inversée (RPN)
   List<String> _toRpn(List<String> tokens) {
     final output = <String>[];
     final ops = <String>[];
@@ -148,6 +150,7 @@ class ExpressionEngine {
       final b = stack.removeLast();
       final a = stack.removeLast();
 
+      // effectuer l'opération
       double res;
       switch (t) {
         case '+':

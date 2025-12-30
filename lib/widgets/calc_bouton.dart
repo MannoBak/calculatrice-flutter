@@ -16,6 +16,7 @@ class CalcButton extends StatelessWidget {
   /// override de hauteur (utile pour le bouton "=" vertical)
   final double? heightOverride;
 
+  // Constructeur de la classe CalcButton
   const CalcButton({
     super.key,
     required this.text,
@@ -31,7 +32,7 @@ class CalcButton extends StatelessWidget {
     final Color bg;
     final Color fg;
 
-    // 🎨 Couleurs (opérateurs en orange, mais % sera mis en utility côté page)
+    // Couleurs (opérateurs en orange, mais % sera mis en utility côté page)
     switch (kind) {
       case ButtonKind.equalTall:
         bg = Colors.orange;
@@ -51,9 +52,11 @@ class CalcButton extends StatelessWidget {
         fg = Colors.white;
     }
 
+    // Calcul de la hauteur et de la taille de la police
     final double h = heightOverride ?? size;
     final double fontSize = text.length >= 2 ? size * 0.25 : size * 0.35;
 
+    // Construction du bouton avec les styles et comportements définis
     return Padding(
       padding: EdgeInsets.all(gap / 2),
       child: SizedBox(

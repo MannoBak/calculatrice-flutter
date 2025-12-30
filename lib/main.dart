@@ -5,7 +5,7 @@ import 'pages/calc_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ Bloquer l'application en mode portrait uniquement
+  // Bloquer l'application en mode portrait uniquement
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);

@@ -81,11 +81,19 @@ class _CalculatorPageState extends State<CalculatorPage> {
         _display = "0";
       }
 
-      // nouvelle saisie après "="
-      if (_lastExpr.isNotEmpty && (isDigit || token == ".")) {
-        _expr = "";
-        _lastExpr = "";
-        _display = "0";
+      // comportement après "=":
+      // - si on tape un chiffre ou "." => nouvelle saisie
+      // - si on tape un opérateur => on enchaîne l'opération avec le résultat
+      if (_lastExpr.isNotEmpty) {
+        if (isDigit || token == ".") {
+          _expr = "";
+          _lastExpr = "";
+          _display = "0";
+        } else if (_isOperator(token)) {
+          // garder `_expr` (contenant le résultat) et retirer le topText
+          _lastExpr = "";
+          // l'opérateur sera ajouté par la logique ci-dessous
+        }
       }
 
       // logique d'ajout du token si valide
@@ -151,7 +159,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
             final H = c.maxHeight;
             final isLandscape = W > H;
 
-            // ✅ Limiter la largeur sur très grands écrans (évite l'étirement)
+            // Limiter la largeur sur très grands écrans (évite l'étirement)
             final maxCalcWidth = isLandscape ? W : math.min(W, 520.0);
 
             // affichage en haut
