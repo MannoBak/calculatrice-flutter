@@ -47,7 +47,7 @@ class CalcButton extends StatelessWidget {
         break;
       case ButtonKind.normal:
       default:
-        bg = const Color(0xFF3A3A3A);
+        bg = const Color(0xFF4A4A4A);
         fg = Colors.white;
     }
 

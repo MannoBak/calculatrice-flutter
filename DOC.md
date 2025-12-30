@@ -81,7 +81,7 @@ Le bouton pourcentage (%) a fait l’objet d’un choix spécifique, à la fois 
 
    # 7.1. Rôle fonctionnel
 
-Sur le plan logique, le symbole `%` est traité comme un opérateur mathématique, permettant d’effectuer une opération de modulo dans l’expression saisie.
+Sur le plan logique, le symbole `%` est traité comme un opérateur mathématique, permettant d’effectuer une opération de modulo(reste de la division écludienne) dans l’expression saisie.
 
 Il est intégré au moteur de calcul au même titre que les autres opérateurs `(+, −, ×, ÷)`, et respecte les règles de priorité définies dans l’évaluation des expressions.
 
@@ -89,10 +89,9 @@ Il est intégré au moteur de calcul au même titre que les autres opérateurs `
 
 Sur le plan visuel, le bouton `%` n’est pas mis en évidence comme les opérateurs principaux (+, −, ×, ÷).
 
-Il est volontairement affiché avec le même style que les boutons utilitaires (comme le bouton C) et les chiffres :
+Il est volontairement affiché avec le même style que les boutons utilitaires (comme le bouton C : Réinitialisation) et les chiffres :
  - couleur de fond neutre,
  - texte blanc,
- - bouton circulaire standard.
 
 Ce choix est motivé par les raisons suivantes :
 
@@ -103,9 +102,58 @@ Ainsi, le bouton `%` est :
  - opérateur sur le plan logique,
  - bouton utilitaire sur le plan ergonomique.
 
-Ce compromis permet de conserver une hiérarchie visuelle claire tout en garantissant un comportement mathématique correct.
+## 8. Gestion des priorités opératoires
 
-## 8. Choix ergonomiques
+L’application intègre un moteur de calcul interne capable d’évaluer correctement les expressions mathématiques saisies par l’utilisateur en respectant les règles de priorité des opérateurs (également appelées priorités opératoires).
+
+## 8.1. Règles de priorité appliquées
+
+Les opérateurs sont évalués selon l’ordre de priorité suivant :
+
+Multiplication (×), Division (÷) et Modulo (%)
+
+Addition (+) et Soustraction (−)
+
+Ainsi, une expression comme : 2 + 3 × 4 est correctement évaluée comme : 2 + (3 × 4) = 14
+et non comme : (2 + 3) × 4 = 20
+
+
+Ce comportement est conforme aux règles mathématiques standards et à celui des calculatrices réelles.
+
+## 8.2. Principe de fonctionnement du moteur de calcul
+
+L’évaluation des expressions repose sur une analyse structurée de la chaîne saisie (_expr) :
+
+- l’expression est découpée en nombres et opérateurs,
+
+  - les opérateurs sont traités en fonction de leur niveau de priorité,
+
+  - les opérations de priorité élevée sont calculées en premier,
+
+le résultat final est ensuite déterminé de manière séquentielle.
+
+Cette approche permet :
+
+- d’éviter toute ambiguïté dans le calcul,
+- de garantir un résultat correct quelle que soit la complexité de l’expression,
+
+## 8.3. Intégration du modulo (%) dans les priorités
+
+L’opérateur `%` est intégré au même niveau de priorité que la multiplication et la division.
+Exemple : 10 % 3 + 4 = 5
+
+Ce choix assure une cohérence mathématique et un comportement prévisible pour l’utilisateur.
+
+## 8.4. Avantages de cette approche
+
+La gestion explicite des priorités permet :
+- une fidélité au raisonnement mathématique standard,
+  - un comportement identique à celui des calculatrices physiques,
+  - une meilleure compréhension des résultats affichés,
+  - une base évolutive pour l’ajout futur de fonctionnalités (parenthèses, mode scientifique, etc.).
+
+
+## 9. Choix ergonomiques
 Les choix suivants ont été faits pour améliorer l’expérience utilisateur :
   - Couleurs contrastées pour une bonne lisibilité.
   - Taille de police adaptable à la largeur de l’écran.
@@ -114,13 +162,14 @@ Les choix suivants ont été faits pour améliorer l’expérience utilisateur :
 
 ---
 
-## 9. Conclusion
-Cette implémentation permet de concilier :
-  - fidélité à la maquette,
-  - robustesse fonctionnelle,
-  - responsivité complète,
-  - expérience utilisateur intuitive.
+## 10. Gestion de l’orientation de l’écran
 
-L’architecture choisie facilite également l’évolution future de l’application (historique des calculs, thèmes, mode scientifique, etc.).
+Afin de garantir une interface stable, lisible et conforme à la maquette fournie, l’application est volontairement verrouillée en mode portrait.
 
----
+Ce choix est motivé par les points suivants :
+
+  - la maquette de la calculatrice est conçue pour un usage vertical,
+
+  - les écrans en mode paysage (faible hauteur) peuvent provoquer des débordements visuels (RenderFlex overflow),
+
+  - les calculatrices réelles et numériques sont principalement utilisées en orientation portrait sur smartphone.

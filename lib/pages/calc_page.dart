@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../services/logique.dart';
 import '../widgets/calc_bouton.dart';
@@ -22,7 +23,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
   // Vérifie si une chaîne est un opérateur
   bool _isOperator(String s) =>
       s == "+" || s == "-" || s == "×" || s == "÷" || s == "%";
-  
+
   // Efface toute l'expression et réinitialise l'affichage
   void _clearAll() {
     setState(() {
@@ -50,7 +51,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
         return;
       }
 
-      // Inverse le signe du dernier nombre pour le modifier au besoin
+      // Inverse le signe du dernier nombre
       final chunk = _engine.lastNumberChunk(_expr);
       if (chunk.isEmpty) return;
 
@@ -120,7 +121,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
     });
   }
 
-// Évalue l'expression actuelle et met à jour l'affichage
+  // Évalue l'expression actuelle et met à jour l'affichage
   void _equals() {
     if (_expr.isEmpty) return;
 
@@ -150,25 +151,48 @@ class _CalculatorPageState extends State<CalculatorPage> {
             final H = c.maxHeight;
             final isLandscape = W > H;
 
+            // ✅ Limiter la largeur sur très grands écrans (évite l'étirement)
+            final maxCalcWidth = isLandscape ? W : math.min(W, 520.0);
+
             // affichage en haut
-            final displayH = (H * (isLandscape ? 0.32 : 0.30)).clamp(110.0, 220.0);
+            final displayH =
+            (H * (isLandscape ? 0.32 : 0.30)).clamp(110.0, 220.0);
             final topText = (_lastExpr.isNotEmpty ? _lastExpr : _expr);
 
-            final displayFont = (W * 0.14).clamp(34.0, 60.0);
-            final exprFont = (W * 0.05).clamp(14.0, 22.0);
+            final displayFont = (maxCalcWidth * 0.14).clamp(34.0, 60.0);
+            final exprFont = (maxCalcWidth * 0.05).clamp(14.0, 22.0);
 
             // tailles boutons
             const padX = 16.0;
             const padY = 6.0;
-            final innerW = W - 2 * padX;
+            final innerW = maxCalcWidth - 2 * padX;
 
-            final gap = (W * 0.04).clamp(6.0, 12.0);
+            final gap = (maxCalcWidth * 0.04).clamp(6.0, 12.0);
+
+            // Helpers pour rows stables (pas spaceBetween)
+            Widget hgap() => SizedBox(width: gap);
+            Widget vgap() => SizedBox(height: gap);
+
+            Widget rowCentered(List<Widget> children) {
+              final spaced = <Widget>[];
+              for (int i = 0; i < children.length; i++) {
+                spaced.add(children[i]);
+                if (i != children.length - 1) spaced.add(hgap());
+              }
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: spaced,
+              );
+            }
 
             // ====== PORTRAIT : maquette "standard" ======
             Widget portraitKeyboard(double keyboardH) {
               final innerH = keyboardH - 2 * padY;
-              final maxButtonW = (innerW - 4 * gap) / 4;
-              final maxButtonH = (innerH - 5 * gap) / 5;
+
+              // 4 colonnes -> 3 gaps
+              final maxButtonW = (innerW - 3 * gap) / 4;
+              // 5 lignes -> 4 gaps
+              final maxButtonH = (innerH - 4 * gap) / 5;
 
               final size = [maxButtonW, maxButtonH]
                   .reduce((a, b) => a < b ? a : b)
@@ -176,70 +200,61 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
               final equalHeight = 2 * size + gap;
 
-              Widget row(List<Widget> children) => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: children,
-              );
-
-              // Construction du clavier en portrait
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: padX, vertical: padY),
+                padding:
+                const EdgeInsets.symmetric(horizontal: padX, vertical: padY),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    row([
-                      CalcButton(text: "C", onTap: _clearAll, kind: ButtonKind.utility, size: size, gap: gap),
-                      CalcButton(text: "%", onTap: () => _append("%"), kind: ButtonKind.utility, size: size, gap: gap),
-                      CalcButton(text: "÷", onTap: () => _append("÷"), kind: ButtonKind.op, size: size, gap: gap),
-                      CalcButton(text: "×", onTap: () => _append("×"), kind: ButtonKind.op, size: size, gap: gap),
+                    rowCentered([
+                      CalcButton(text: "C", onTap: _clearAll, kind: ButtonKind.utility, size: size, gap: 0),
+                      CalcButton(text: "%", onTap: () => _append("%"), kind: ButtonKind.utility, size: size, gap: 0),
+                      CalcButton(text: "÷", onTap: () => _append("÷"), kind: ButtonKind.op, size: size, gap: 0),
+                      CalcButton(text: "×", onTap: () => _append("×"), kind: ButtonKind.op, size: size, gap: 0),
                     ]),
-                    row([
-                      CalcButton(text: "7", onTap: () => _append("7"), size: size, gap: gap),
-                      CalcButton(text: "8", onTap: () => _append("8"), size: size, gap: gap),
-                      CalcButton(text: "9", onTap: () => _append("9"), size: size, gap: gap),
-                      CalcButton(text: "−", onTap: () => _append("-"), kind: ButtonKind.op, size: size, gap: gap),
+                    vgap(),
+                    rowCentered([
+                      CalcButton(text: "7", onTap: () => _append("7"), size: size, gap: 0),
+                      CalcButton(text: "8", onTap: () => _append("8"), size: size, gap: 0),
+                      CalcButton(text: "9", onTap: () => _append("9"), size: size, gap: 0),
+                      CalcButton(text: "−", onTap: () => _append("-"), kind: ButtonKind.op, size: size, gap: 0),
                     ]),
-                    row([
-                      CalcButton(text: "4", onTap: () => _append("4"), size: size, gap: gap),
-                      CalcButton(text: "5", onTap: () => _append("5"), size: size, gap: gap),
-                      CalcButton(text: "6", onTap: () => _append("6"), size: size, gap: gap),
-                      CalcButton(text: "+", onTap: () => _append("+"), kind: ButtonKind.op, size: size, gap: gap),
+                    vgap(),
+                    rowCentered([
+                      CalcButton(text: "4", onTap: () => _append("4"), size: size, gap: 0),
+                      CalcButton(text: "5", onTap: () => _append("5"), size: size, gap: 0),
+                      CalcButton(text: "6", onTap: () => _append("6"), size: size, gap: 0),
+                      CalcButton(text: "+", onTap: () => _append("+"), kind: ButtonKind.op, size: size, gap: 0),
                     ]),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Column(
-                              children: [
-                                row([
-                                  CalcButton(text: "1", onTap: () => _append("1"), size: size, gap: gap),
-                                  CalcButton(text: "2", onTap: () => _append("2"), size: size, gap: gap),
-                                  CalcButton(text: "3", onTap: () => _append("3"), size: size, gap: gap),
-                                ]),
-                                row([
-                                  CalcButton(text: "+/-", onTap: _toggleSign, kind: ButtonKind.utility, size: size, gap: gap),
-                                  CalcButton(text: "0", onTap: () => _append("0"), size: size, gap: gap),
-                                  CalcButton(text: ".", onTap: () => _append("."), size: size, gap: gap),
-                                ]),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Align(
-                              alignment: Alignment.topCenter,
-                              child: CalcButton(
-                                text: "=",
-                                onTap: _equals,
-                                kind: ButtonKind.equalTall,
-                                size: size,
-                                gap: gap,
-                                heightOverride: equalHeight,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    vgap(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Column(
+                          children: [
+                            rowCentered([
+                              CalcButton(text: "1", onTap: () => _append("1"), size: size, gap: 0),
+                              CalcButton(text: "2", onTap: () => _append("2"), size: size, gap: 0),
+                              CalcButton(text: "3", onTap: () => _append("3"), size: size, gap: 0),
+                            ]),
+                            vgap(),
+                            rowCentered([
+                              CalcButton(text: "+/-", onTap: _toggleSign, kind: ButtonKind.utility, size: size, gap: 0),
+                              CalcButton(text: "0", onTap: () => _append("0"), size: size, gap: 0),
+                              CalcButton(text: ".", onTap: () => _append("."), size: size, gap: 0),
+                            ]),
+                          ],
+                        ),
+                        hgap(),
+                        CalcButton(
+                          text: "=",
+                          onTap: _equals,
+                          kind: ButtonKind.equalTall,
+                          size: size,
+                          gap: 0,
+                          heightOverride: equalHeight,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -248,20 +263,17 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
             // ====== PAYSAGE : layout 2 colonnes (zéro overflow) ======
             Widget landscapeKeyboard(double keyboardH) {
-              // Ici on change totalement le layout pour tenir sur petite hauteur
-              // Colonne gauche : 4 colonnes (C/%/7/8/9/4/5/6/1/2/3/+/-/0/.)
-              // Colonne droite : opérateurs (÷ × − + =)
               final innerH = keyboardH - 2 * padY;
 
-              // 5 rangées visibles en paysage (plus compact)
-              final rows = 5.0;
+              // 5 rangées visibles en paysage
+              const rows = 5.0;
 
               // gauche = 4 colonnes, droite = 1 colonne
               final leftW = (innerW * 0.78);
               final rightW = (innerW * 0.22);
 
-              final maxLeftButtonW = (leftW - 4 * gap) / 4;
-              final maxButtonH = (innerH - rows * gap) / rows;
+              final maxLeftButtonW = (leftW - 3 * gap) / 4;
+              final maxButtonH = (innerH - (rows - 1) * gap) / rows;
 
               final size = [maxLeftButtonW, maxButtonH]
                   .reduce((a, b) => a < b ? a : b)
@@ -269,69 +281,95 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
               final equalHeight = 2 * size + gap;
 
-              Widget row(List<Widget> children) => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: children,
-              );
+              Widget placeholder() => SizedBox(width: size, height: size);
 
-              Widget smallButton(String t, VoidCallback onTap, {ButtonKind kind = ButtonKind.normal}) {
-                return CalcButton(text: t, onTap: onTap, kind: kind, size: size, gap: gap);
+              Widget smallButton(String t, VoidCallback onTap,
+                  {ButtonKind kind = ButtonKind.normal}) {
+                return CalcButton(
+                    text: t, onTap: onTap, kind: kind, size: size, gap: 0);
+              }
+
+              Widget row4(List<Widget> children) {
+                // row de 4 cases exactement
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    children[0],
+                    hgap(),
+                    children[1],
+                    hgap(),
+                    children[2],
+                    hgap(),
+                    children[3],
+                  ],
+                );
               }
 
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: padX, vertical: padY),
+                padding:
+                const EdgeInsets.symmetric(horizontal: padX, vertical: padY),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // LEFT (4 colonnes)
                     SizedBox(
                       width: leftW,
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          row([
+                          row4([
                             smallButton("C", _clearAll, kind: ButtonKind.utility),
                             smallButton("%", () => _append("%"), kind: ButtonKind.utility),
                             smallButton("7", () => _append("7")),
                             smallButton("8", () => _append("8")),
                           ]),
-                          row([
+                          vgap(),
+                          row4([
                             smallButton("9", () => _append("9")),
                             smallButton("4", () => _append("4")),
                             smallButton("5", () => _append("5")),
                             smallButton("6", () => _append("6")),
                           ]),
-                          row([
+                          vgap(),
+                          row4([
                             smallButton("1", () => _append("1")),
                             smallButton("2", () => _append("2")),
                             smallButton("3", () => _append("3")),
                             smallButton("+/-", _toggleSign, kind: ButtonKind.utility),
                           ]),
-                          row([
+                          vgap(),
+                          row4([
                             smallButton("0", () => _append("0")),
                             smallButton(".", () => _append(".")),
-                            // deux places vides pour garder l'équilibre (comme une grille)
-                            const SizedBox.shrink(),
-                            const SizedBox.shrink(),
+                            placeholder(),
+                            placeholder(),
                           ]),
                         ],
                       ),
                     ),
 
+                    hgap(),
+
                     // RIGHT (opérateurs)
                     SizedBox(
                       width: rightW,
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          CalcButton(text: "÷", onTap: () => _append("÷"), kind: ButtonKind.op, size: size, gap: gap),
-                          CalcButton(text: "×", onTap: () => _append("×"), kind: ButtonKind.op, size: size, gap: gap),
-                          CalcButton(text: "−", onTap: () => _append("-"), kind: ButtonKind.op, size: size, gap: gap),
-                          CalcButton(text: "+", onTap: () => _append("+"), kind: ButtonKind.op, size: size, gap: gap),
-                          // "=" (pilule) en bas, hauteur 2 lignes
+                          CalcButton(text: "÷", onTap: () => _append("÷"), kind: ButtonKind.op, size: size, gap: 0),
+                          vgap(),
+                          CalcButton(text: "×", onTap: () => _append("×"), kind: ButtonKind.op, size: size, gap: 0),
+                          vgap(),
+                          CalcButton(text: "−", onTap: () => _append("-"), kind: ButtonKind.op, size: size, gap: 0),
+                          vgap(),
+                          CalcButton(text: "+", onTap: () => _append("+"), kind: ButtonKind.op, size: size, gap: 0),
+                          vgap(),
                           CalcButton(
                             text: "=",
                             onTap: _equals,
                             kind: ButtonKind.equalTall,
                             size: size,
-                            gap: gap,
+                            gap: 0,
                             heightOverride: equalHeight,
                           ),
                         ],
@@ -344,47 +382,55 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
             final keyboardH = H - displayH;
 
-            return Column(
-              children: [
-                // ===== Affichage =====
-                SizedBox(
-                  height: displayH,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          topText.isEmpty ? " " : topText,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: exprFont.toDouble(), color: Colors.white60),
+            return Center(
+              child: SizedBox(
+                width: maxCalcWidth,
+                child: Column(
+                  children: [
+                    // ===== Affichage =====
+                    SizedBox(
+                      height: displayH,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              topText.isEmpty ? " " : topText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: exprFont.toDouble(),
+                                  color: Colors.white60),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _display,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: displayFont.toDouble(),
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _display,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: displayFont.toDouble(),
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
 
-                // ===== Clavier =====
-                Expanded(
-                  child: isLandscape
-                      ? landscapeKeyboard(keyboardH)
-                      : portraitKeyboard(keyboardH),
+                    // ===== Clavier =====
+                    Expanded(
+                      child: isLandscape
+                          ? landscapeKeyboard(keyboardH)
+                          : portraitKeyboard(keyboardH),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         ),
