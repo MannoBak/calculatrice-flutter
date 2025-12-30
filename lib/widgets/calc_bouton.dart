@@ -47,6 +47,7 @@ class CalcButton extends StatelessWidget {
         fg = Colors.white;
         break;
       case ButtonKind.normal:
+      // ignore: unreachable_switch_default
       default:
         bg = const Color(0xFF4A4A4A);
         fg = Colors.white;

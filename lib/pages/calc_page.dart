@@ -58,11 +58,26 @@ class _CalculatorPageState extends State<CalculatorPage> {
       // position de début du chunk
       final start = _expr.length - chunk.length;
 
-      // bascule le signe
+      // Si le chunk commence par '-', supprimer ce signe (retire la négation)
       if (chunk.startsWith("-")) {
         _expr = _expr.substring(0, start) + chunk.substring(1);
       } else {
-        _expr = _expr.substring(0, start) + "-$chunk";
+        // Si un opérateur + ou - précède le chunk, on le bascule (2+5 -> 2-5, 2-5 -> 2+5)
+        if (start > 0) {
+          final prev = _expr[start - 1];
+          if (prev == "+") {
+            _expr = _expr.substring(0, start - 1) + "-" + chunk;
+            _display = _expr;
+            return;
+          } else if (prev == "-") {
+            _expr = _expr.substring(0, start - 1) + "+" + chunk;
+            _display = _expr;
+            return;
+          }
+        }
+
+        // Sinon, insérer un signe négatif uniaire devant le chunk
+        _expr = _expr.substring(0, start) + "-" + chunk;
       }
 
       _display = _expr;
